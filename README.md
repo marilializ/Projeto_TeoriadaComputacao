@@ -51,4 +51,3 @@ python3 scripts/plot.py results/random_summary.csv --output-dir results/plots
 Os casos do gerador são `random`, `chain`, `disconnected` e `dense`. `chain` põe arestas em ordem reversa e força vários passes do Bellman–Ford; `disconnected` testa inalcançáveis; `dense` acentua o custo por arestas. Não rotule um caso como melhor ou pior universal sem justificar a implementação e a ordem das arestas. Compare teoria e medição com gráfico log-log ou com `T/f(V,E)`, usando `f_D=(V+E)log₂(V)` e `f_B=VE` para as instâncias simples geradas. A implementação Python do heap usa entradas repetidas e descarte de entradas obsoletas; em grafos arbitrários com muitas arestas paralelas, seu limite é `O(E log E)`; o heap C permite diminuir chaves e tem o limite `O((V+E) log V)` pedido no enunciado. Discutam essa diferença na análise.
 
 O problema vizinho indicado no PDF é o **caminho simples mais longo (NP-difícil)**. A discussão é teórica, sem implementação.
-
