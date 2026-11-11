@@ -1,6 +1,6 @@
 # Caminho mínimo — Teoria da Computação
 
-Base reproduzível para comparar Dijkstra com heap e Bellman–Ford em Python 3 e C11. As quatro implementações recebem **o mesmo grafo dirigido e a mesma origem**. O PDF do enunciado foi consultado; `sources/` permanece intacto.
+Base reproduzível para comparar Dijkstra com heap e Bellman–Ford em Python 3 e C11. As quatro implementações recebem **o mesmo grafo dirigido e a mesma origem**. O PDF do enunciado foi consultado para definir o escopo e a metodologia.
 
 ## Arquitetura e contrato
 
@@ -11,7 +11,6 @@ Base reproduzível para comparar Dijkstra com heap e Bellman–Ford em Python 3 
 | `scripts/generate.py` | Grafos determinísticos |
 | `scripts/benchmark.py` e `scripts/plot.py` | Medições, resumo CSV e gráficos |
 | `tests/` e `data/fixtures/` | Corretude e entradas conhecidas |
-| `analysis/` | Roteiro do relatório e interpretação |
 
 Entrada em texto: primeira linha `V E origem`; depois, exatamente `E` linhas `u v peso`. Vértices são inteiros de `0` a `V-1`, arestas são **dirigidas**, pesos são inteiros de `-1000000` a `1000000`, e a origem deve existir. Arestas paralelas são aceitas. **A comparação das quatro implementações usa somente pesos não negativos**, pois Dijkstra rejeita qualquer peso negativo. Bellman–Ford aceita pesos negativos e rejeita ciclos negativos alcançáveis pela origem; esses casos são testados separadamente. Ciclos negativos inalcançáveis não afetam o resultado da origem. Vértices inalcançáveis têm distância `null` no JSON. O resultado é a lista de distâncias a partir da origem; predecessores e reconstrução de caminhos não fazem parte do contrato inicial.
 
