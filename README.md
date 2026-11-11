@@ -52,13 +52,3 @@ Os casos do gerador são `random`, `chain`, `disconnected` e `dense`. `chain` p�
 
 O problema vizinho indicado no PDF é o **caminho simples mais longo (NP-difícil)**. A discussão é teórica, sem implementação.
 
-## Divisão para quatro integrantes
-
-| Pessoa | Responsabilidade | Entregas |
-|---|---|---|
-| **1 — Liz** | Dijkstra nas duas linguagens; funcionamento, pseudocódigo, O/Ω/Θ, casos e testes próprios | Duas implementações, testes e seção teórica de Dijkstra |
-| **2** | Bellman–Ford nas duas linguagens; funcionamento, pseudocódigo, O/Ω/Θ, casos e testes com pesos/ciclos negativos | Duas implementações, testes e seção teórica de Bellman–Ford |
-| **3** | Gerador com semente fixa, tamanhos/densidades, benchmark, médias, desvios, gráficos e interpretação | Entradas, scripts, tabelas, gráficos e análise experimental |
-| **4** | Testes cruzados, caminho simples mais longo, P × NP, GitHub, README e integração do relatório | Testes de integração, seção P × NP, README e PDF consolidado |
-
-As quatro versões desta base já executam, mas a fundamentação teórica, os resultados experimentais e o relatório final ainda precisam ser produzidos pela equipe. Cada responsável deve revisar, explicar, testar e, se necessário, melhorar sua parte; a divisão não implica apresentar código gerado como contribuição individual não realizada. Todos preservam o contrato comum, interpretam os gráficos e participam do relatório e da apresentação. Registrem as contribuições reais. O PDF pede declaração do uso de IA e que todos consigam explicar o código. Prazo indicado: 24/11 às 23:59; apresentações em 25/11 e 30/11.
