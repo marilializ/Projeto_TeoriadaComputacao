@@ -30,7 +30,7 @@ def main() -> None:
     parser.add_argument("--sizes", nargs="+", type=int, default=[32, 64, 128, 256, 512, 1024])
     parser.add_argument("--repeats", type=int, default=15)
     parser.add_argument("--seed", type=int, default=2026)
-    parser.add_argument("--case", choices=["random", "chain", "disconnected", "dense"], default="random")
+    parser.add_argument("--case", choices=["random", "chain", "chain-forward", "disconnected", "dense"], default="random")
     parser.add_argument("--edges-per-vertex", type=int, default=4)
     parser.add_argument("--output", type=Path, default=ROOT / "results/benchmark.csv")
     args = parser.parse_args()

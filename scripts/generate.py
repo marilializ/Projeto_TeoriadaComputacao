@@ -8,11 +8,13 @@ from pathlib import Path
 def generate(vertices: int, edges_per_vertex: int, seed: int, case: str) -> list[tuple[int, int, int]]:
     if vertices < 2 or edges_per_vertex < 1:
         raise ValueError("vertices >= 2 e edges-per-vertex >= 1 são necessários")
-    if case not in {"random", "chain", "disconnected", "dense"}:
+    if case not in {"random", "chain", "chain-forward", "disconnected", "dense"}:
         raise ValueError("caso desconhecido")
     rng = random.Random(seed)
     if case == "chain":
         return [(u, u + 1, rng.randint(1, 100)) for u in range(vertices - 2, -1, -1)]
+    if case == "chain-forward":
+        return [(u, u + 1, rng.randint(1, 100)) for u in range(vertices - 1)]
     if case == "disconnected":
         return [(u, u + 1, rng.randint(1, 100)) for u in range(vertices // 2 - 2, -1, -1)]
     if case == "dense":
@@ -28,6 +30,7 @@ def generate(vertices: int, edges_per_vertex: int, seed: int, case: str) -> list
             continue
         used.add((u, v))
         edges.append((u, v, rng.randint(1, 100)))
+    rng.shuffle(edges)  # ordem aleatória: remove o viés da cadeia em ordem direta
     return edges
 
 
@@ -44,7 +47,7 @@ def main() -> None:
     parser.add_argument("--vertices", type=int, required=True)
     parser.add_argument("--edges-per-vertex", type=int, default=4)
     parser.add_argument("--seed", type=int, default=2026)
-    parser.add_argument("--case", choices=["random", "chain", "disconnected", "dense"], default="random")
+    parser.add_argument("--case", choices=["random", "chain", "chain-forward", "disconnected", "dense"], default="random")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     write_graph(args.output, args.vertices, generate(args.vertices, args.edges_per_vertex, args.seed, args.case))

@@ -20,5 +20,10 @@ class GeneratorTests(unittest.TestCase):
         self.assertEqual([(u, v) for u, v, _ in edges], [(3, 4), (2, 3), (1, 2), (0, 1)])
 
 
+    def test_chain_forward_order(self):
+        edges = generate(5, 4, 2026, "chain-forward")
+        self.assertEqual([(u, v) for u, v, _ in edges], [(0, 1), (1, 2), (2, 3), (3, 4)])
+
+
 if __name__ == "__main__":
     unittest.main()
