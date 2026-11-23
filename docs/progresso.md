@@ -74,16 +74,19 @@ Ressalva: com pesos aleatórios, o `dense` é o caso mais pesado na prática, ma
 
 ## 5. Pendências
 
-- [ ] Definir os tamanhos da campanha final, separados por algoritmo: maiores para o Dijkstra e menores para o Bellman-Ford no `chain`.
-- [ ] Script para registrar o ambiente (CPU, RAM, sistema operacional, versões), funcionando em Linux e macOS.
-- [ ] Gráficos de linguagem × linguagem (razão Python/C) e de algoritmo × algoritmo.
-- [ ] (Opcional) pior caso forçado do Dijkstra.
-- [ ] (Opcional) `.gitattributes` com `* text=auto eol=lf`, para evitar o problema de CRLF.
-- [ ] Rodar a campanha final em uma máquina só, com o PC parado.
+Feito em 23/11:
+- [x] Tamanhos da campanha final, separados por caso (`scripts/run_all.sh`).
+- [x] Script de ambiente (`scripts/environment.py`), funcionando em Linux, WSL e macOS.
+- [x] Gráficos: teórico × medido, algoritmo × algoritmo, Python × C, casos de cada algoritmo e memória; tabelas em `results/tabelas.md`.
+- [x] Teste cruzado das 4 implementações contra Floyd–Warshall em todos os casos (`tests/test_cross_check.py`).
+- [x] Bônus: pico de memória por execução (`maxrss_kib`).
+
+Falta:
+- [ ] Rodar `sh scripts/run_all.sh` na máquina final, com o PC parado, e guardar `results/`.
 - [ ] Relatório em PDF (itens 1 a 7, ambiente, contribuições, declaração de IA).
 - [ ] Slides (até 7 min, todos apresentam).
-- [ ] (Bônus) medição de memória.
+- [ ] (Opcional) pior caso forçado do Dijkstra; `.gitattributes`.
 
 ## 6. Uso de IA (anotar para a declaração no relatório)
 
-Claude (Anthropic) foi usado em 21/11 para: revisar o repositório em relação ao enunciado, explicar os melhores e piores casos de cada algoritmo, sugerir o embaralhamento do caso `random`, o caso `chain-forward` e seu teste, e organizar este resumo.
+Claude (Anthropic) foi usado em 21/11 para: revisar o repositório em relação ao enunciado, explicar os melhores e piores casos de cada algoritmo, sugerir o embaralhamento do caso `random`, o caso `chain-forward` e seu teste, e organizar este resumo. Em 23/11: escrever os scripts de ambiente, campanha completa (`run_all.sh`), gráficos/tabelas, medição de memória e o teste cruzado, e atualizar o README.

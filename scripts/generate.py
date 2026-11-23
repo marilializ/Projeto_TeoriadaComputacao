@@ -4,11 +4,13 @@ import argparse
 import random
 from pathlib import Path
 
+CASES = ["random", "chain", "chain-forward", "disconnected", "dense"]
+
 
 def generate(vertices: int, edges_per_vertex: int, seed: int, case: str) -> list[tuple[int, int, int]]:
     if vertices < 2 or edges_per_vertex < 1:
         raise ValueError("vertices >= 2 e edges-per-vertex >= 1 são necessários")
-    if case not in {"random", "chain", "chain-forward", "disconnected", "dense"}:
+    if case not in CASES:
         raise ValueError("caso desconhecido")
     rng = random.Random(seed)
     if case == "chain":
@@ -47,7 +49,7 @@ def main() -> None:
     parser.add_argument("--vertices", type=int, required=True)
     parser.add_argument("--edges-per-vertex", type=int, default=4)
     parser.add_argument("--seed", type=int, default=2026)
-    parser.add_argument("--case", choices=["random", "chain", "chain-forward", "disconnected", "dense"], default="random")
+    parser.add_argument("--case", choices=CASES, default="random")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     write_graph(args.output, args.vertices, generate(args.vertices, args.edges_per_vertex, args.seed, args.case))

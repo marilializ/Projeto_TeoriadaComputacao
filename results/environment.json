@@ -1,0 +1,11 @@
+{
+  "data": "2026-11-23T18:28:53",
+  "cpu": "13th Gen Intel(R) Core(TM) i5-1334U",
+  "nucleos_logicos": 12,
+  "ram_gib": 7.6,
+  "sistema": "Ubuntu 24.04.1 LTS (WSL2, Windows), kernel 6.6.87.2-microsoft-standard-WSL2",
+  "python": "CPython 3.12.3",
+  "compilador": "cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+  "cflags": "-O2 -std=c11 -Wall -Wextra -Wpedantic",
+  "commit": "f7887b2"
+}
