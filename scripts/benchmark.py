@@ -1,15 +1,13 @@
 """Run the four programs on identical inputs; store raw and summary CSV files.
 
-Mede, para cada execução:
-  * elapsed_ns  -- tempo só da função do algoritmo (medido dentro do programa);
-  * maxrss_kib  -- pico de memória residente do processo inteiro (bônus de memória).
+Mede, para cada execução, elapsed_ns: o tempo só da função do algoritmo (medido dentro do programa).
+A memória é medida à parte, por scripts/memory.py.
 """
 
 import argparse
 import csv
 import json
 import math
-import os
 import statistics
 import subprocess
 import sys
@@ -50,23 +48,15 @@ def case_factor(algorithm: str, case: str, vertices: int, edges: int) -> float:
     return edges
 
 
-def run_with_memory(language: str, algorithm: str, graph: Path) -> tuple[dict, int]:
-    """Executa o programa e devolve (saída JSON, pico de memória em KiB)."""
+def run(language: str, algorithm: str, graph: Path) -> dict:
     command = ([sys.executable, "-m", "python.sp"] if language == "python" else [str(ROOT / "build/shortest_path")])
-    with tempfile.TemporaryFile(mode="w+") as out, tempfile.TemporaryFile(mode="w+") as err:
-        process = subprocess.Popen(command + [algorithm, str(graph)], cwd=ROOT, text=True, stdout=out, stderr=err)
-        _, status, usage = os.wait4(process.pid, 0)
-        process.returncode = os.waitstatus_to_exitcode(status)
-        out.seek(0)
-        err.seek(0)
-        if process.returncode != 0:
-            raise RuntimeError(f"{language}/{algorithm} falhou: {err.read().strip()}")
-        data = json.loads(out.read())
+    result = subprocess.run(command + [algorithm, str(graph)], cwd=ROOT, text=True, capture_output=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"{language}/{algorithm} falhou: {result.stderr.strip()}")
+    data = json.loads(result.stdout)
     if data["algorithm"] != algorithm or not isinstance(data["elapsed_ns"], int):
         raise ValueError("saída inválida")
-    # ru_maxrss: KiB no Linux, bytes no macOS.
-    maxrss_kib = usage.ru_maxrss // 1024 if sys.platform == "darwin" else usage.ru_maxrss
-    return data, maxrss_kib
+    return data
 
 
 def main() -> None:
@@ -95,7 +85,7 @@ def main() -> None:
                 # Rotaciona a ordem dos programas para reduzir efeitos sistemáticos de carga de fundo.
                 programs = PROGRAMS[(repetition - 1) % 4:] + PROGRAMS[:(repetition - 1) % 4]
                 for language, algorithm in programs:
-                    data, maxrss_kib = run_with_memory(language, algorithm, graph_path)
+                    data = run(language, algorithm, graph_path)
                     if len(data["distances"]) != vertices:
                         raise ValueError("comprimento de resposta inválido")
                     if expected is None:
@@ -104,8 +94,7 @@ def main() -> None:
                         raise ValueError(f"divergência em V={vertices}, repetição={repetition}, {language}/{algorithm}")
                     rows.append({"seed": args.seed, "case": args.case, "vertices": vertices,
                                  "edges": len(edges), "language": language, "algorithm": algorithm,
-                                 "repetition": repetition, "elapsed_ns": data["elapsed_ns"],
-                                 "maxrss_kib": maxrss_kib})
+                                 "repetition": repetition, "elapsed_ns": data["elapsed_ns"]})
             print(f"[{args.case}] V={vertices}, E={len(edges)}: {args.repeats} repetições verificadas", file=sys.stderr)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", newline="", encoding="utf-8") as output:
@@ -114,8 +103,7 @@ def main() -> None:
         writer.writerows(rows)
     summary_path = args.output.with_name(args.output.stem + "_summary.csv")
     fields = ["seed", "case", "vertices", "edges", "language", "algorithm", "repeats",
-              "mean_ns", "stdev_ns", "bound_factor", "mean_over_bound", "case_factor", "mean_over_case",
-              "mean_maxrss_kib"]
+              "mean_ns", "stdev_ns", "bound_factor", "mean_over_bound", "case_factor", "mean_over_case"]
     with summary_path.open("w", newline="", encoding="utf-8") as output:
         writer = csv.DictWriter(output, fields)
         writer.writeheader()
@@ -132,8 +120,7 @@ def main() -> None:
                                  "repeats": len(samples), "mean_ns": mean,
                                  "stdev_ns": statistics.stdev(samples),
                                  "bound_factor": bound, "mean_over_bound": mean / bound,
-                                 "case_factor": expected, "mean_over_case": mean / expected,
-                                 "mean_maxrss_kib": statistics.mean(r["maxrss_kib"] for r in group)})
+                                 "case_factor": expected, "mean_over_case": mean / expected})
     print(args.output)
     print(summary_path)
 

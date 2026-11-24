@@ -33,6 +33,9 @@ run_case chain-forward 4096 8192 16384 32768 65536 131072 262144 524288
 run_case chain         256 512 1024 2048 4096 8192 16384
 run_case dense         32 64 128 256 512 1024
 
+echo "== Memória (bônus): processos limpos via build/peakrss"
+python3 scripts/memory.py --case random --output results/memory.csv
+
 echo "== Gráficos e tabelas"
 python3 scripts/plot.py results
 

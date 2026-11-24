@@ -6,7 +6,7 @@ Para cada caso (random, chain, chain-forward, dense):
   <caso>_python_vs_c.png  quantas vezes o Python é mais lento que o C, por algoritmo
 Além disso:
   casos_<algoritmo>.png   o mesmo algoritmo nos vários casos (melhor, médio, pior)
-  memoria.png             pico de memória x V+E (bônus)
+  memoria.png             pico de memória x V+E (bônus), a partir de results/memory.csv
   tabelas.md              tabelas em Markdown para colar no relatório
 """
 
@@ -40,7 +40,7 @@ def load(directory: Path) -> dict[str, list[dict]]:
                 for key in ("vertices", "edges", "repeats"):
                     row[key] = int(row[key])
                 for key in ("mean_ns", "stdev_ns", "bound_factor", "mean_over_bound", "case_factor",
-                            "mean_over_case", "mean_maxrss_kib"):
+                            "mean_over_case"):
                     if key in row and row[key] != "":
                         row[key] = float(row[key])
                 by_case[row["case"]].append(row)
@@ -152,29 +152,41 @@ def plot_cases(plt, by_case: dict[str, list[dict]], output: Path) -> list[Path]:
     return files
 
 
-def plot_memory(plt, by_case: dict[str, list[dict]], output: Path) -> list[Path]:
-    rows = by_case.get("random") or next(iter(by_case.values()))
-    if "mean_maxrss_kib" not in rows[0]:
+def plot_memory(plt, directory: Path, output: Path) -> list[Path]:
+    """Pico de memória (menos a base do interpretador/programa vazio) x V+E, de results/memory.csv."""
+    path = directory / "memory.csv"
+    if not path.is_file():
         return []
-    fig, ax = plt.subplots(figsize=(7, 4.5))
+    with path.open(newline="", encoding="utf-8") as source:
+        rows = list(csv.DictReader(source))
+    for r in rows:
+        for key in ("vertices", "edges", "net_kib"):
+            r[key] = int(float(r[key]))
+    fig, ax = plt.subplots(figsize=(8, 5))
     for language, style in zip(LANGUAGES, ("-", "--")):
         for algorithm in ALGORITHMS:
-            data = series(rows, language, algorithm)
-            ax.plot([r["vertices"] + r["edges"] for r in data], [r["mean_maxrss_kib"] / 1024 for r in data],
+            data = sorted((r for r in rows if r["language"] == language and r["algorithm"] == algorithm),
+                          key=lambda r: r["vertices"])
+            ax.plot([r["vertices"] + r["edges"] for r in data], [max(r["net_kib"], 1) / 1024 for r in data],
                     marker="o", linestyle=style, color=COLORS[algorithm],
                     label=f"{NAMES[language]} / {NAMES[algorithm]}")
+    ref = sorted({r["vertices"] + r["edges"] for r in rows})
+    c_rows = [r for r in rows if r["language"] == "c" and r["algorithm"] == "dijkstra"]
+    anchor = max(c_rows, key=lambda r: r["vertices"])
+    scale = anchor["net_kib"] / 1024 / (anchor["vertices"] + anchor["edges"])
+    ax.plot(ref, [scale * x for x in ref], color="grey", linestyle=":", label="referência linear c·(V+E)")
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("V + E (escala log)")
-    ax.set_ylabel("Pico de memória do processo (MiB)")
+    ax.set_ylabel("Pico de memória acima da base (MiB, escala log)")
     ax.set_title(f"Memória × tamanho da entrada — {CASE_LABELS.get(rows[0]['case'], rows[0]['case'])}")
     ax.grid(True, which="both", alpha=0.3)
     ax.legend(fontsize=8)
     fig.tight_layout()
-    path = output / "memoria.png"
-    fig.savefig(path, dpi=160)
+    out = output / "memoria.png"
+    fig.savefig(out, dpi=160)
     plt.close(fig)
-    return [path]
+    return [out]
 
 
 def ms(value: float) -> str:
@@ -235,7 +247,7 @@ def main() -> None:
     for case in [c for c in CASE_ORDER if c in by_case]:
         files += plot_case(plt, case, by_case[case], output)
     files += plot_cases(plt, by_case, output)
-    files += plot_memory(plt, by_case, output)
+    files += plot_memory(plt, args.results, output)
     table_path = args.results / "tabelas.md"
     table_path.write_text(tables(by_case), encoding="utf-8")
     files.append(table_path)
