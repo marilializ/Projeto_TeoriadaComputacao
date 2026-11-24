@@ -4,6 +4,9 @@
  * Por que existe: um filho criado direto pelo benchmark em Python herda, no ru_maxrss, a memória
  * do processo pai. Criado a partir deste processo mínimo, o pico medido é só o do programa. */
 #define _POSIX_C_SOURCE 200809L
+#ifdef __APPLE__
+#define _DARWIN_C_SOURCE /* no macOS, _POSIX_C_SOURCE esconde ru_maxrss de struct rusage */
+#endif
 #include <stdio.h>
 #include <sys/resource.h>
 #include <sys/types.h>

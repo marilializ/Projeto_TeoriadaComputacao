@@ -19,6 +19,7 @@ python3 scripts/environment.py --output results/environment.json
 #  random / chain-forward: grafos esparsos, cabem tamanhos grandes
 #  chain: pior caso do Bellman-Ford, Θ(V²) aqui (E = V-1); Python fica lento acima de 16384
 #  dense: grafo completo, E = V(V-1); 1024 já são ~1 milhão de arestas
+#  dijkstra-worst: DAG completo, E = V(V-1)/2; pesos crescem com V², por isso V <= 1414
 run_case() {
     case_name=$1
     shift
@@ -32,6 +33,10 @@ run_case random        2048 4096 8192 16384 32768 65536 131072 262144
 run_case chain-forward 4096 8192 16384 32768 65536 131072 262144 524288
 run_case chain         256 512 1024 2048 4096 8192 16384
 run_case dense         32 64 128 256 512 1024
+run_case dijkstra-worst 32 64 128 256 512 1024
+
+echo "== Contagem de operações (independe da máquina)"
+python3 scripts/count_ops.py --output results/operacoes.csv
 
 echo "== Memória (bônus): processos limpos via build/peakrss"
 python3 scripts/memory.py --case random --output results/memory.csv

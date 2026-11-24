@@ -1,0 +1,11 @@
+{
+  "data": "2026-11-24T17:31:54",
+  "cpu": "Apple M5",
+  "nucleos_logicos": 10,
+  "ram_gib": 16.0,
+  "sistema": "macOS 27.0.1 (arm64)",
+  "python": "CPython 3.14.7",
+  "compilador": "Apple clang version 21.0.0 (clang-2100.4.1.1)",
+  "cflags": "-O2 -std=c11 -Wall -Wextra -Wpedantic",
+  "commit": "38fc8cd"
+}

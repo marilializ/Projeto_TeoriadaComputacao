@@ -24,7 +24,7 @@ Cada execução escreve uma linha JSON com `algorithm`, `distances` e `elapsed_n
 
 ## Compilar, executar e testar
 
-Requisitos: Python 3.10+ e compilador C11 com `clock_gettime`. Funciona em **Linux, WSL e macOS**.
+Requisitos: Python 3.10+ e compilador C11 com `clock_gettime`. Funciona em **Linux, WSL e macOS** (testado nos três).
 
 > **Windows:** use o WSL e clone o repositório *dentro* do WSL (`cd ~ && git clone ...`). Um clone feito pelo Git do Windows converte os arquivos para CRLF.
 
@@ -40,7 +40,7 @@ python3 -m python.sp bellman-ford /tmp/grafo.txt
 ./build/shortest_path bellman-ford /tmp/grafo.txt
 ```
 
-`make clean` remove os executáveis (`build/`). Os testes comparam as quatro respostas com resultados conhecidos (inalcançáveis, arestas paralelas, pesos zero), testam pesos e ciclos negativos no Bellman–Ford e, em `test_cross_check.py`, comparam as quatro implementações com Floyd–Warshall em grafos gerados de todos os casos.
+`make clean` remove os executáveis (`build/`). Os testes comparam as quatro respostas com resultados conhecidos (inalcançáveis, arestas paralelas, pesos zero), testam pesos e ciclos negativos no Bellman–Ford e, em `test_cross_check.py`, comparam as quatro implementações com Floyd–Warshall em grafos gerados de todos os casos. `test_generator.py` confere que o `dijkstra-worst` faz toda aresta melhorar uma distância para um valor menor que o de todos os vértices no heap.
 
 ## Reproduzir a campanha completa
 
@@ -57,28 +57,33 @@ Depois, com o computador sem outras cargas:
 sh scripts/run_all.sh
 ```
 
-O script compila, roda os testes, grava o ambiente em `results/environment.json` (CPU, RAM, SO, versões, flags e commit), mede o tempo dos quatro casos com 15 repetições e semente 2026, mede a memória (`results/memory.csv`) e gera `results/plots/*.png` e `results/tabelas.md`. Leva de 10 a 20 minutos. `REPEATS=30 sh scripts/run_all.sh` muda o número de repetições.
+O script compila, roda os testes, grava o ambiente em `results/environment.json` (CPU, RAM, SO, versões, flags e commit), mede o tempo dos cinco casos com 15 repetições e semente 2026, conta as operações (`results/operacoes.csv`), mede a memória (`results/memory.csv`) e gera `results/plots/*.png` e `results/tabelas.md`. Leva de 10 a 20 minutos. `REPEATS=30 sh scripts/run_all.sh` muda o número de repetições.
 
 | Caso | Grafo | Tamanhos (V) | Papel na análise |
 |---|---|---|---|
 | `random` | ~4 arestas por vértice, ordem embaralhada | 2048 … 262144 | caso médio dos dois |
 | `chain-forward` | fila `0→1→…` em ordem direta | 4096 … 524288 | melhor caso do Bellman–Ford (2 passes, Θ(E)); Dijkstra Θ(V+E) |
 | `chain` | fila em ordem reversa | 256 … 16384 | pior caso do Bellman–Ford (V−1 passes, Θ(V·E)); Dijkstra Θ(V+E) |
-| `dense` | grafo completo, E = V(V−1) | 32 … 1024 | caso mais pesado do Dijkstra com heap |
+| `dense` | grafo completo, E = V(V−1), pesos aleatórios | 32 … 1024 | grafo denso; com pesos aleatórios poucas arestas melhoram distâncias, então **não** é o pior caso do Dijkstra |
+| `dijkstra-worst` | DAG completo, E = V(V−1)/2, pesos construídos | 32 … 1024 | pior caso do Dijkstra: toda aresta é um decrease-key que sobe até a raiz, Θ((V+E)·log V); Bellman–Ford faz 2 passes |
 
 Cada execução é verificada (as quatro respostas precisam ser iguais). `results/<caso>.csv` guarda cada tempo e `results/<caso>_summary.csv` guarda média, desvio padrão amostral e duas razões:
 
 - `mean_over_bound`: tempo ÷ limite do enunciado, `(V+E)·log₂V` para Dijkstra e `V·E` para Bellman–Ford;
 - `mean_over_case`: tempo ÷ custo esperado **do caso** (tabela abaixo). Deve tender a uma constante quando a análise está certa.
 
-| | chain-forward | random | dense | chain |
-|---|---|---|---|---|
-| Dijkstra | V+E | (V+E)·log V | (V+E)·log V | V+E |
-| Bellman–Ford | E | E·log V | E | V·E |
+| | chain-forward | random | dense | dijkstra-worst | chain |
+|---|---|---|---|---|---|
+| Dijkstra | V+E | (V+E)·log V | (V+E)·log V (limite folgado) | (V+E)·log V | V+E |
+| Bellman–Ford | E | E·log V | E | E | V·E |
+
+**Contagem de operações:** `scripts/count_ops.py` grava `results/operacoes.csv` com os passes do Bellman–Ford, as melhorias de distância do Dijkstra e as trocas no heap da versão C, para as mesmas entradas da campanha. Os números não dependem da máquina e confirmam o custo de cada caso (por exemplo, passes ≈ log₂V no `random` e uma melhoria por aresta no `dijkstra-worst`).
+
+Os pesos do `dijkstra-worst` são w(i, i+1) = 1 e w(i, j) = 1 + R(i+1) + (j−i−2), com R(k) = 1 + (V−1−k)(V−k)/2. Eles crescem com V², por isso o caso aceita no máximo V = 1414 (peso ≤ 10⁶). O efeito máximo em C depende de a lista encadeada percorrer as arestas na ordem inversa do arquivo, como faz `c/graph.c`.
 
 Gráficos gerados por caso: `<caso>_tempo.png` (medido × curva teórica, Dijkstra × Bellman–Ford, um painel por linguagem), `<caso>_razao.png` (T/f) e `<caso>_python_vs_c.png`. Também: `casos_<algoritmo>.png` (melhor/médio/pior) e `memoria.png` (pico de memória × V+E, bônus). A análise dos casos está em `docs/progresso.md`.
 
-> `plot.py` lê **todos** os `*_summary.csv` da pasta indicada. Guarde medições de teste fora de `results/` para não misturá-las com a campanha final.
+> `plot.py` lê **todos** os `*_summary.csv` da pasta indicada (sem entrar em subpastas). Guarde medições de teste fora de `results/` para não misturá-las com a campanha final.
 
 `elapsed_ns` mede apenas a função do algoritmo, depois da leitura e antes da serialização. Não há JIT (CPython e C compilado), então não há aquecimento.
 
@@ -90,4 +95,6 @@ O problema vizinho indicado no PDF é o **caminho simples mais longo (NP-difíci
 
 ## Resultados da campanha final
 
-Medidos em 23/11/2026 num Intel Core i5-1334U (7,6 GiB de RAM), Ubuntu 24.04 no WSL2, Python 3.12.3 e gcc 13.3 com `-O2`, no commit `9147fe0`. Os dados estão em `results/`, com resumo em `results/tabelas.md` e gráficos em `results/plots/`. A análise completa está no relatório da equipe.
+Os casos `random`, `chain-forward`, `chain` e `dense` foram medidos em 23/11/2026 num Intel Core i5-1334U (7,6 GiB de RAM), Ubuntu 24.04 no WSL2, Python 3.12.3 e gcc 13.3 com `-O2`. O `results/environment.json` registra o commit `f7887b2` porque foi gravado antes do commit dos scripts da campanha (`9147fe0`); o código dos algoritmos (`c/` e `python/`) é idêntico em `f7887b2`, `9147fe0` e `38fc8cd`.
+
+O caso `dijkstra-worst` foi medido em 24/11/2026 em outra máquina (Apple M5, 16 GiB, macOS, Python 3.14 e Apple clang 21 com `-O2`) e está separado em `results/macos/` (dados, ambiente, gráficos e tabela), para não misturar máquinas nos gráficos. Por isso, compare os tempos absolutos desse caso só entre si; a análise dele usa a razão T/f. Para medi-lo na máquina da campanha: `python3 scripts/benchmark.py --case dijkstra-worst --sizes 32 64 128 256 512 1024 --output results/dijkstra-worst.csv && python3 scripts/plot.py results`. Os dados estão em `results/`, com resumo em `results/tabelas.md` e gráficos em `results/plots/`. A análise completa está no relatório da equipe.

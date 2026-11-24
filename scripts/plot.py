@@ -20,15 +20,17 @@ ALGORITHMS = ("dijkstra", "bellman-ford")
 LANGUAGES = ("c", "python")
 NAMES = {"dijkstra": "Dijkstra (heap)", "bellman-ford": "Bellman-Ford", "c": "C", "python": "Python"}
 COLORS = {"dijkstra": "#2a6fdb", "bellman-ford": "#d9480f"}
-CASE_ORDER = ["chain-forward", "random", "dense", "chain", "disconnected"]
+CASE_ORDER = ["chain-forward", "random", "dense", "dijkstra-worst", "chain", "disconnected"]
 CASE_LABELS = {"random": "random (caso médio)", "chain": "chain (pior caso do BF)",
                "chain-forward": "chain-forward (melhor caso do BF)", "dense": "dense (grafo completo)",
-               "disconnected": "disconnected"}
+               "dijkstra-worst": "dijkstra-worst (pior caso do Dijkstra)", "disconnected": "disconnected"}
 FACTOR_LABELS = {
     ("dijkstra", "chain"): "V+E", ("dijkstra", "chain-forward"): "V+E",
     ("dijkstra", "random"): "(V+E)·log V", ("dijkstra", "dense"): "(V+E)·log V",
+    ("dijkstra", "dijkstra-worst"): "(V+E)·log V",
     ("bellman-ford", "chain"): "V·E", ("bellman-ford", "chain-forward"): "E",
     ("bellman-ford", "random"): "E·log V", ("bellman-ford", "dense"): "E",
+    ("bellman-ford", "dijkstra-worst"): "E",
 }
 
 

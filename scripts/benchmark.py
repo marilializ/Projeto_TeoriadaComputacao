@@ -31,11 +31,15 @@ def case_factor(algorithm: str, case: str, vertices: int, edges: int) -> float:
     """Custo esperado para o caso gerado (ver docs/progresso.md, seção 4).
 
     Dijkstra: nas filas o heap nunca passa de 1 elemento -> Θ(V+E).
+      dijkstra-worst -> toda aresta é um decrease-key que sobe até a raiz -> (V+E)·log V (pior caso)
+      random / dense -> (V+E)·log V como limite (no dense, com pesos aleatórios, o limite é folgado)
     Bellman-Ford: custo = (número de passes) x E.
       chain          -> V-1 passes        -> V·E   (pior caso)
       chain-forward  -> 2 passes          -> E     (melhor caso)
       random         -> ~log V passes     -> E·log V
       dense          -> poucos passes, ~constante -> E
+      dijkstra-worst -> arestas em ordem topológica, 2 passes -> E
+    A contagem real de passes e de melhorias está em results/operacoes.csv (scripts/count_ops.py).
     """
     if algorithm == "dijkstra":
         if case in ("chain", "chain-forward"):
